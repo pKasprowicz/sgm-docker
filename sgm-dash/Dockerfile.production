@@ -1,0 +1,25 @@
+FROM mhart/alpine-node
+MAINTAINER Piotr Kasprowicz
+
+ENV DEBIAN_FRONTEND noninteractive
+
+EXPOSE 80
+EXPOSE 1883
+EXPOSE 25603
+
+RUN apk --no-cache add git python g++ make libzmq krb5-dev
+
+RUN ln -s `which nodejs` /usr/bin/node
+
+RUN npm install pm2 -g
+
+WORKDIR /var/git
+
+RUN git clone https://github.com/pKasprowicz/sgm-dashboard.git -b master
+
+WORKDIR sgm-dashboard/sgm-dash
+RUN npm install && npm install ../sgm-common
+
+WORKDIR ../
+
+CMD ["pm2-docker", "./ecosystem.json", "--only", "SGMdashboard", "--env", "production"]
